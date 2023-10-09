@@ -158,6 +158,7 @@ int Read_Global(const OS_XML *xml, XML_NODE node, void *configp, void *mailp)
     const char *xml_agents_disconnection_time = "agents_disconnection_time";
     const char *xml_agents_disconnection_alert_time = "agents_disconnection_alert_time";
     const char *xml_limits = "limits";
+    const char *xml_update_check = "update_check";
 
 
     const char *xml_emailto = "email_to";
@@ -419,6 +420,22 @@ int Read_Global(const OS_XML *xml, XML_NODE node, void *configp, void *mailp)
             if (Config) {
                 Config->memorysize = atoi(node[i]->content);
             }
+        /* update check system */
+        else if (strcmp(node[i]->element, xml_update_check) == 0) {
+            if (strcmp(node[i]->content, "yes") == 0) {
+                if (Config) {
+                    Config->update_check = 1;
+                }
+            } else if (strcmp(node[i]->content, "no") == 0) {
+                if (Config) {
+                    Config->update_check = 0;
+                }
+            } else {
+                merror(XML_VALUEERR, node[i]->element, node[i]->content);
+                return (OS_INVALID);
+            }
+        }
+
 #ifndef CLIENT
         } else if (strcmp(node[i]->element, xml_limits) == 0) {
             XML_NODE chld_node = NULL;
