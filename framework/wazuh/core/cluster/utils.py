@@ -10,6 +10,8 @@ import signal
 import socket
 import time
 import typing
+import asyncio
+
 from contextvars import ContextVar
 from functools import lru_cache
 from glob import glob
@@ -354,3 +356,19 @@ async def forward_function(func: callable, f_kwargs: dict = None, request_type: 
                           broadcasting=broadcasting)
     pool = concurrent.futures.ThreadPoolExecutor()
     return pool.submit(run, dapi.distribute_function()).result()
+
+
+def execute_coroutine(coro: typing.Coroutine[typing.Any, typing.Any, typing.Any]) -> typing.Any:
+    """Execute asynchronous coroutine synchronically.
+    Parameters
+    ----------
+    coro : Coroutine
+        Any coroutine call with any parameters that returns any value.
+
+    Returns
+    -------
+    Return any value.
+    """
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(coro)
+    return result

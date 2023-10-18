@@ -121,7 +121,9 @@ def totals_(date: datetime.datetime = utils.get_utc_now()) -> list:
     return affected
 
 
-def get_daemons_stats_socket(socket: str, agents_list: Union[list[int], str] = None, last_id: int = None) -> dict:
+async def get_daemons_stats_socket(socket: str,
+                                   agents_list: Union[list[int], str] = None,
+                                   last_id: int = None) -> dict:
     """Send message to Wazuh socket to get statistical information.
 
     Parameters
@@ -157,16 +159,17 @@ def get_daemons_stats_socket(socket: str, agents_list: Union[list[int], str] = N
 
     # Connect to socket
     try:
-        s = wazuh_socket.WazuhSocketJSON(socket)
-    except Exception:
-        raise WazuhInternalError(1121, extra_message=socket)
+        s = wazuh_socket.WazuhAsyncSocketJSON()
+        await s.connect(socket)
+    except Exception as exc:
+        raise WazuhInternalError(1121, extra_message=socket) from exc
 
     # Send message and receive socket response
     try:
-        s.send(full_message)
-        response = s.receive(raw=last_id is not None)
+        await s.send(full_message)
+        response = await s.receive(raw=last_id is not None)
     finally:
-        s.close()
+        await s.close()
 
     # Timestamps transformations
     with contextlib.suppress(KeyError):
